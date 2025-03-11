@@ -8,6 +8,12 @@ contract StorageContentionSimulator {
     // Event to log the updates
     event SlotUpdated(uint256 slot, uint256 newValue);
 
+    receive() external payable {}
+
+    function fundMe() public payable {
+        require(msg.value > 0, "You need to send some Ether");
+    }
+
     // guess a value, pay a fee proportional to the how close the value is
 
     // Function to write to a specific slot if the current value is within the expected range
@@ -25,7 +31,8 @@ contract StorageContentionSimulator {
             "Current value does not fall within the expected range"
         );
         slots[slot] = newValue;
-        block.coinbase.transfer(payment);
+        (bool success, ) = block.coinbase.call{value: payment}(new bytes(0));
+        require(success, "Failed to send Ether");
         emit SlotUpdated(slot, newValue);
     }
 
